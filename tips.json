@@ -1,0 +1,43 @@
+{
+  "vip_users": [],
+
+  "tips": [
+    {
+      "id": 1,
+      "match": "Arsenal vs Chelsea",
+      "tip": "1X (Arsenal wygra lub remis)",
+      "odds": "1.85",
+      "stake": "2u",
+      "sport": "Piłka nożna",
+      "is_vip": false,
+      "result": "win",
+      "date": "2026-04-17"
+    },
+    {
+      "id": 2,
+      "match": "Real Madrid vs Atletico",
+      "tip": "Over 2.5 goli",
+      "odds": "1.72",
+      "stake": "1u",
+      "sport": "Piłka nożna",
+      "is_vip": false,
+      "result": "pending",
+      "date": "2026-04-18"
+    },
+    {
+      "id": 3,
+      "match": "Lakers vs Warriors",
+      "tip": "Lakers wygrają",
+      "odds": "2.10",
+      "stake": "1u",
+      "sport": "Koszykówka",
+      "is_vip": true,
+      "result": "pending",
+      "date": "2026-04-18"
+    }
+  ],
+
+  "stats": {
+    "note": "Statystyki liczone automatycznie z typów powyżej"
+  }
+}
