@@ -13,8 +13,8 @@ from telegram.constants import ParseMode
 # ============================================================
 # KONFIGURACJA — ZMIEŃ TE WARTOŚCI
 # ============================================================
-BOT_TOKEN    = "WSTAW_TOKEN_Z_BOTFATHER"
-ADMIN_ID     = 123456789
+BOT_TOKEN    = "8262701551:AAGAqmd_v-6PWShkTimMHBo6_rb96n4fbJI"
+ADMIN_ID     = 8122842950
 MINI_APP_URL = "https://mncszymus.github.io/goatbets"  # URL GitHub Pages
 TIPS_FILE    = "tips.json"   # lokalny plik tips.json (ten sam folder co bot.py)
 CONTACT_URL  = "https://t.me/GoatBetsCEO"
