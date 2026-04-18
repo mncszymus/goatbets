@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>GoatBets</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --card: #1a1a1a;
+    --card2: #222;
+    --accent: #f5c542;
+    --accent2: #e0a800;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --blue: #3498db;
+    --purple: #9b59b6;
+    --text: #f0f0f0;
+    --muted: #888;
+    --border: #2a2a2a;
+    --nav-h: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    padding-bottom: calc(var(--nav-h) + 16px);
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+    padding: 20px 16px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    font-size: 32px;
+    line-height: 1;
+  }
+  .header-text h1 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+  .header-text p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+  .vip-badge {
+    margin-left: auto;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: none;
+  }
+  .vip-badge.visible { display: block; }
+
+  /* ── BOTTOM NAV ── */
+  .nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: var(--nav-h);
+    background: #111;
+    border-top: 1px solid var(--border);
+    display: flex;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 10px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 8px 4px;
+  }
+  .nav-btn .icon { font-size: 22px; transition: transform 0.2s; }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn.active .icon { transform: scale(1.15); }
+
+  /* ── PAGES ── */
+  .page { display: none; padding: 0; }
+  .page.active { display: block; }
+
+  /* ── SECTION TITLE ── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 20px 16px 10px;
+  }
+
+  /* ── TIP CARD ── */
+  .tip-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin: 0 12px 12px;
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .tip-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sport-icon { font-size: 20px; }
+  .tip-match {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .tip-tier {
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 10px;
+  }
+  .tier-free { background: rgba(46,204,113,0.15); color: var(--green); }
+  .tier-vip  { background: rgba(245,197,66,0.15); color: var(--accent); }
+
+  .tip-body { padding: 12px 14px; }
+  .tip-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  .tip-row:last-child { margin-bottom: 0; }
+  .tip-label { font-size: 12px; color: var(--muted); }
+  .tip-value { font-size: 13px; font-weight: 700; color: var(--text); }
+  .tip-value.highlight { color: var(--accent); font-size: 15px; }
+  .tip-value.green { color: var(--green); }
+  .tip-value.red   { color: var(--red); }
+
+  .tip-prediction {
+    background: var(--card2);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin: 10px 0 0;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+
+  .result-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .result-win  { background: rgba(46,204,113,0.2); color: var(--green); }
+  .result-loss { background: rgba(231,76,60,0.2); color: var(--red); }
+  .result-pending { background: rgba(52,152,219,0.2); color: var(--blue); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 32px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 52px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; color: var(--text); margin-bottom: 6px; }
+  .empty-state p  { font-size: 13px; line-height: 1.5; }
+
+  /* ── VIP LOCKED ── */
+  .vip-locked {
+    margin: 16px 12px;
+    background: linear-gradient(135deg, #1f1a05, #2a2000);
+    border: 1px solid rgba(245,197,66,0.3);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .vip-locked .lock-icon { font-size: 48px; margin-bottom: 12px; }
+  .vip-locked h2 { font-size: 20px; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+  .vip-locked p  { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+  .vip-features {
+    text-align: left;
+    margin-bottom: 24px;
+  }
+  .vip-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .vip-feature .f-icon { font-size: 16px; width: 24px; text-align: center; }
+
+  .btn-gold {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #000;
+    font-size: 15px;
+    font-weight: 800;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .btn-gold:active { opacity: 0.85; transform: scale(0.98); }
+
+  /* ── STATS PAGE ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 12px 12px;
+  }
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-card.wide { grid-column: 1 / -1; }
+  .stat-value { font-size: 28px; font-weight: 900; color: var(--accent); }
+  .stat-value.green { color: var(--green); }
+  .stat-value.red   { color: var(--red); }
+  .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+  .progress-bar-wrap {
+    background: var(--border);
+    border-radius: 10px;
+    height: 8px;
+    margin-top: 12px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--green), var(--accent));
+    transition: width 1s ease;
+  }
+
+  /* ── INFO PAGE ── */
+  .info-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin: 0 12px 12px;
+    padding: 18px;
+  }
+  .info-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 12px; color: var(--accent); }
+  .info-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .info-row:last-child { margin-bottom: 0; }
+  .info-row .i-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .contact-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin: 0 12px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .contact-btn:active { background: #2a2a2a; }
+
+  /* ── PRICING ── */
+  .price-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 12px 12px;
+  }
+  .price-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .price-card.popular {
+    border-color: var(--accent);
+    background: linear-gradient(135deg, #1f1a05, #1a1a1a);
+  }
+  .price-card .duration { font-size: 15px; font-weight: 700; }
+  .price-card .popular-tag {
+    font-size: 10px;
+    background: var(--accent);
+    color: #000;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 800;
+  }
+  .price-card .price { font-size: 18px; font-weight: 900; color: var(--accent); }
+  .price-card .per { font-size: 11px; color: var(--muted); }
+
+  /* ── LOADING ── */
+  .loading {
+    text-align: center;
+    padding: 60px 32px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── DATE CHIP ── */
+  .date-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    color: var(--muted);
+    margin: 12px 16px 4px;
+  }
+
+  .disclaimer {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    padding: 8px 24px 16px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">🐐</div>
+  <div class="header-text">
+    <h1>GoatBets</h1>
+    <p>Codzienne typy bukmacherskie</p>
+  </div>
+  <div class="vip-badge" id="vipBadge">👑 VIP</div>
+</div>
+
+<!-- PAGE: FREE TIPS -->
+<div class="page active" id="page-free">
+  <div class="section-title">Typy FREE — dzisiaj</div>
+  <div id="free-tips-container">
+    <div class="loading"><div class="spinner"></div>Ładowanie typów...</div>
+  </div>
+</div>
+
+<!-- PAGE: VIP TIPS -->
+<div class="page" id="page-vip">
+  <div id="vip-content"></div>
+</div>
+
+<!-- PAGE: STATS -->
+<div class="page" id="page-stats">
+  <div class="section-title">Statystyki ogółem</div>
+  <div class="stats-grid" id="stats-grid">
+    <div class="loading" style="grid-column:1/-1"><div class="spinner"></div>Ładowanie...</div>
+  </div>
+</div>
+
+<!-- PAGE: INFO -->
+<div class="page" id="page-info">
+  <div class="section-title">Kup VIP</div>
+  <div class="price-cards">
+    <div class="price-card">
+      <div><div class="duration">7 dni</div><div class="per">jednorazowo</div></div>
+      <div class="price">50 PLN</div>
+    </div>
+    <div class="price-card popular">
+      <div>
+        <div class="duration">30 dni</div>
+        <div class="popular-tag">POLECANE</div>
+      </div>
+      <div class="price">150 PLN</div>
+    </div>
+    <div class="price-card">
+      <div><div class="duration">90 dni</div><div class="per">oszczędzasz 100 PLN</div></div>
+      <div class="price">350 PLN</div>
+    </div>
+  </div>
+
+  <a class="contact-btn" id="contactBtn" href="#">
+    <span>📩</span> Napisz i kup VIP
+  </a>
+
+  <div class="section-title">O GoatBets</div>
+  <div class="info-card">
+    <h3>🐐 Kim jesteśmy?</h3>
+    <div class="info-row"><span class="i-icon">⚽</span>Specjalizujemy się w piłce nożnej, koszykówce i tenisie</div>
+    <div class="info-row"><span class="i-icon">📊</span>Każdy typ oparty na analizie statystycznej i formie drużyn</div>
+    <div class="info-row"><span class="i-icon">🔔</span>Powiadomienia o nowych typach przez bota</div>
+    <div class="info-row"><span class="i-icon">👑</span>Subskrybenci VIP otrzymują 5–8 typów dziennie z pełną analizą</div>
+  </div>
+
+  <p class="disclaimer">⚠️ Typy mają charakter wyłącznie informacyjny. Graj odpowiedzialnie. Hazard może uzależniać.</p>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="nav">
+  <button class="nav-btn active" onclick="showPage('free', this)">
+    <span class="icon">🐐</span>FREE
+  </button>
+  <button class="nav-btn" onclick="showPage('vip', this)">
+    <span class="icon">👑</span>VIP
+  </button>
+  <button class="nav-btn" onclick="showPage('stats', this)">
+    <span class="icon">📊</span>Statystyki
+  </button>
+  <button class="nav-btn" onclick="showPage('info', this)">
+    <span class="icon">ℹ️</span>Info & VIP
+  </button>
+</nav>
+
+<script>
+// ── CONFIG ──────────────────────────────────────────────────
+// Ustaw swój link kontaktowy na Telegramie
+const CONTACT_URL = "https://t.me/GoatBetsCEO";
+
+// Plik z typami — po wgraniu na GitHub Pages będzie to URL do tips.json
+// np. "https://twojnick.github.io/goatbets/tips.json"
+// Na razie używamy danych testowych poniŸej
+const TIPS_URL = "tips.json";
+// ────────────────────────────────────────────────────────────
+
+const tg = window.Telegram?.WebApp;
+if (tg) {
+  tg.ready();
+  tg.expand();
+}
+
+// Pobierz User ID z Telegrama (do sprawdzenia VIP)
+const telegramUserId = tg?.initDataUnsafe?.user?.id || null;
+const firstName = tg?.initDataUnsafe?.user?.first_name || "UŸytkowniku";
+
+// Kontakt
+document.getElementById("contactBtn").href = CONTACT_URL;
+
+// Dane — wypełniane z tips.json
+let allData = null;
+let isVip = false;
+
+// Sprawdź VIP na podstawie danych z tips.json
+function checkVip(data) {
+  if (!telegramUserId) return false;
+  return (data.vip_users || []).includes(telegramUserId);
+}
+
+// Format daty
+function todayStr() {
+  return new Date().toLocaleDateString("pl-PL", {day:"2-digit", month:"long", year:"numeric"});
+}
+
+function sportIcon(sport) {
+  const icons = {
+    "Piłka nożna": "⚽", "Koszykówka": "🏀", "Tenis": "🎾",
+    "MMA": "🥊", "Hokej": "🏒", "Baseball": "⚾", "Rugby": "🏉"
+  };
+  return icons[sport] || "🎯";
+}
+
+function resultBadge(result) {
+  if (result === "win")     return '<span class="result-badge result-win">✅ TRAFIONY</span>';
+  if (result === "loss")    return '<span class="result-badge result-loss">❌ PUDŁO</span>';
+  return '<span class="result-badge result-pending">🔵 W TOKU</span>';
+}
+
+function buildTipCard(tip) {
+  const tierClass = tip.is_vip ? "tier-vip" : "tier-free";
+  const tierLabel = tip.is_vip ? "👑 VIP" : "🐐 FREE";
+  const icon      = sportIcon(tip.sport || "Piłka nożna");
+
+  return `
+    <div class="tip-card">
+      <div class="tip-card-header">
+        <span class="sport-icon">${icon}</span>
+        <span class="tip-match">${tip.match}</span>
+        <span class="tip-tier ${tierClass}">${tierLabel}</span>
+      </div>
+      <div class="tip-body">
+        <div class="tip-prediction">${tip.tip}</div>
+        <div class="tip-row" style="margin-top:10px">
+          <span class="tip-label">Kurs</span>
+          <span class="tip-value highlight">${tip.odds || "—"}</span>
+        </div>
+        <div class="tip-row">
+          <span class="tip-label">Stawka</span>
+          <span class="tip-value">${tip.stake || "1u"}</span>
+        </div>
+        <div class="tip-row">
+          <span class="tip-label">Wynik</span>
+          ${resultBadge(tip.result || "pending")}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderFreeTips(data) {
+  const container = document.getElementById("free-tips-container");
+  const today = new Date().toISOString().split("T")[0];
+  const tips = (data.tips || []).filter(t => !t.is_vip && t.date === today);
+
+  let html = `<div class="date-chip">📅 ${todayStr()}</div>`;
+
+  if (tips.length === 0) {
+    html += `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <h3>Brak typów FREE na dziś</h3>
+        <p>Wróć później lub włącz<br>powiadomienia w bocie!</p>
+      </div>`;
+  } else {
+    tips.forEach(t => html += buildTipCard(t));
+  }
+  container.innerHTML = html;
+}
+
+function renderVipContent(data) {
+  const container = document.getElementById("vip-content");
+
+  if (!isVip) {
+    container.innerHTML = `
+      <div class="vip-locked">
+        <div class="lock-icon">🔐</div>
+        <h2>Typy VIP</h2>
+        <p>Ten obszar jest dostępny wyłącznie dla<br>subskrybentów GoatBets VIP.</p>
+        <div class="vip-features">
+          <div class="vip-feature"><span class="f-icon">⚡</span>5–8 typów dziennie z analizą</div>
+          <div class="vip-feature"><span class="f-icon">💰</span>Wyższe kursy, większy zysk</div>
+          <div class="vip-feature"><span class="f-icon">🔔</span>Powiadomienia priorytetowe</div>
+          <div class="vip-feature"><span class="f-icon">📚</span>Dostęp do archiwum wyników</div>
+          <div class="vip-feature"><span class="f-icon">🎯</span>Bezpośredni kontakt z analitykiem</div>
+        </div>
+        <a class="btn-gold" href="${CONTACT_URL}">💎 Kup VIP — napisz do nas</a>
+      </div>`;
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const tips = (data.tips || []).filter(t => t.is_vip && t.date === today);
+
+  let html = `
+    <div class="section-title">Typy VIP — dzisiaj</div>
+    <div class="date-chip">📅 ${todayStr()}</div>`;
+
+  if (tips.length === 0) {
+    html += `
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <h3>Brak typów VIP na dziś</h3>
+        <p>Wróć później — pojawią się wkrótce!</p>
+      </div>`;
+  } else {
+    tips.forEach(t => html += buildTipCard(t));
+  }
+  container.innerHTML = html;
+}
+
+function renderStats(data) {
+  const grid   = document.getElementById("stats-grid");
+  const tips   = (data.tips || []).filter(t => t.result && t.result !== "pending");
+  const wins   = tips.filter(t => t.result === "win").length;
+  const losses = tips.filter(t => t.result === "loss").length;
+  const total  = tips.length;
+  const wr     = total ? Math.round(wins / total * 100) : 0;
+
+  // Overall ROI mock (can be real later)
+  const allTips = data.tips || [];
+  const freeTips = allTips.filter(t => !t.is_vip).length;
+  const vipTips  = allTips.filter(t => t.is_vip).length;
+
+  grid.innerHTML = `
+    <div class="stat-card">
+      <div class="stat-value green">${wins}</div>
+      <div class="stat-label">✅ Trafione</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value red">${losses}</div>
+      <div class="stat-label">❌ Pudła</div>
+    </div>
+    <div class="stat-card wide">
+      <div class="stat-value">${wr}%</div>
+      <div class="stat-label">📈 Skuteczność</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" style="width:${wr}%"></div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${freeTips}</div>
+      <div class="stat-label">🐐 Typy FREE</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">${vipTips}</div>
+      <div class="stat-label">👑 Typy VIP</div>
+    </div>`;
+}
+
+// Ładuj dane
+async function loadData() {
+  try {
+    const res  = await fetch(TIPS_URL + "?t=" + Date.now());
+    allData    = await res.json();
+    isVip      = checkVip(allData);
+
+    if (isVip) {
+      document.getElementById("vipBadge").classList.add("visible");
+    }
+
+    renderFreeTips(allData);
+    renderVipContent(allData);
+    renderStats(allData);
+  } catch (e) {
+    // Fallback — brak połączenia lub brak pliku
+    document.getElementById("free-tips-container").innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚠️</div>
+        <h3>Nie można zaŁadować typów</h3>
+        <p>Sprawdź połączenie<br>lub wróć za chwilę.</p>
+      </div>`;
+    document.getElementById("vip-content").innerHTML = document.getElementById("free-tips-container").innerHTML;
+    document.getElementById("stats-grid").innerHTML = `<div class="loading" style="grid-column:1/-1">Brak danych</div>`;
+  }
+}
+
+// Nawigacja
+function showPage(name, btn) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("page-" + name).classList.add("active");
+  btn.classList.add("active");
+}
+
+loadData();
+</script>
+</body>
+</html>
